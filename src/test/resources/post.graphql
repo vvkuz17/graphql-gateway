@@ -1,0 +1,58 @@
+type Query {
+    getPost(id: ID!): Post
+    findPosts(filter: FindPostsFilter): [Post!]!
+}
+
+type Mutation {
+    createPost(input: CreatePostInput!): Post
+}
+
+input FindPostsFilter {
+    published: Boolean
+}
+
+input CreatePostInput {
+    title: String
+}
+
+type Post implements Identified {
+    id: ID!
+    title: String!
+    date: Date!
+    published: Boolean!
+    type: Type!
+    views: Int!
+    rating: Float
+    author: Author!
+    relations: [Relation!]
+    linkedPosts: [Post!]
+}
+
+extend type Post {
+    tags: [String!]!
+}
+
+type Author implements Identified {
+    id: ID!
+    name: String
+}
+
+enum Type {
+    news, article
+}
+
+interface Identified {
+    id: ID!
+}
+
+type FilmRelation {
+    filmId: ID!
+}
+
+type ActorRelation {
+    actorId: ID!
+}
+
+union Relation = FilmRelation | ActorRelation
+
+scalar Date

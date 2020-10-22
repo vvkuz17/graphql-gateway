@@ -1,0 +1,45 @@
+name: post-api
+
+schema: post.graphql
+
+datasources:
+  - name: get-post-function
+    type: YandexCloudFunction
+    resource: d4ee6ud2345m1kak1ltq
+
+  - name: create-post-function
+    type: YandexCloudFunction
+    resource: d4e8be3qvb0ndkma8jnf
+
+  - name: find-posts-function
+    type: YandexCloudFunction
+    resource: d4e4th99piq42s782h6i
+
+  - name: get-linked-posts-function
+    type: YandexCloudFunction
+    resource: d4e5fsgu6foi3jql8hak
+    batched: true
+
+fieldResolvers:
+  - type: Query
+    field: getPost
+    datasource: get-post-function
+
+  - type: Query
+    field: findPosts
+    datasource: find-posts-function
+
+  - type: Post
+    field: linkedPosts
+    datasource: get-linked-posts-function
+
+  - type: Mutation
+    field: createPost
+    datasource: create-post-function
+
+typeResolvers:
+  - type: Relation
+    byField: type
+
+  - type: Identified
+    byField: type
