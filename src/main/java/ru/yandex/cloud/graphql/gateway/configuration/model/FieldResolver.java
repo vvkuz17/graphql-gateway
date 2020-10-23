@@ -4,8 +4,8 @@ import lombok.Data;
 
 @Data
 public class FieldResolver {
-    String type;
-    String field;
-    String datasource;
-    String operation;
+    private String type;
+    private String field;
+    private String datasource;
+    private String operation;
 }

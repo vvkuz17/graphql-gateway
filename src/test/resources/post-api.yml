@@ -1,6 +1,7 @@
 name: post-api
 
-schema: post.graphql
+schema:
+  path: post.graphql
 
 datasources:
   - name: get-post-function

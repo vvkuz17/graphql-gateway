@@ -34,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 @ActiveProfiles("test")
 @SpringBootTest(properties = {
         "functions.api.url=http://localhost:8081",
-        "graphql.api.config.location=post-api.yml"
+        "graphql.api.yml.path=post-api.yml"
 })
 class FunctionsTest {
 

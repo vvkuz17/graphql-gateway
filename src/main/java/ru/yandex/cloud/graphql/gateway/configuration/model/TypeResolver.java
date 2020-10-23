@@ -4,6 +4,6 @@ import lombok.Data;
 
 @Data
 public class TypeResolver {
-    String type;
-    String byField;
+    private String type;
+    private String byField;
 }

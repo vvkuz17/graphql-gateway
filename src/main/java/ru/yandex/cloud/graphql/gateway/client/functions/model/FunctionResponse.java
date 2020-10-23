@@ -6,8 +6,8 @@ import lombok.Data;
 
 @Data
 public class FunctionResponse<V> {
-    V data;
-    String errorMessage;
-    String errorType;
-    List<StackTraceItem> stackTrace;
+    private V data;
+    private String errorMessage;
+    private String errorType;
+    private List<StackTraceItem> stackTrace;
 }

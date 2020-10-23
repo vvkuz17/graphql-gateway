@@ -4,8 +4,8 @@ import lombok.Data;
 
 @Data
 public class StackTraceItem {
-    String function;
-    String file;
-    Integer line;
-    Integer column;
+    private String function;
+    private String file;
+    private Integer line;
+    private Integer column;
 }

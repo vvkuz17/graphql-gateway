@@ -7,9 +7,9 @@ import lombok.Data;
 
 @Data
 public class GraphQLApi {
-    String name;
-    String schema;
-    List<DataSource> datasources = new ArrayList<>();
-    List<FieldResolver> fieldResolvers = new ArrayList<>();
-    List<TypeResolver> typeResolvers = new ArrayList<>();
+    private String name;
+    private FileLocation schema;
+    private List<DataSource> datasources = new ArrayList<>();
+    private List<FieldResolver> fieldResolvers = new ArrayList<>();
+    private List<TypeResolver> typeResolvers = new ArrayList<>();
 }

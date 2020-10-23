@@ -47,6 +47,13 @@
             <version>${graphql.version}</version>
         </dependency>
 
+        <!--aws sdk s3-->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
+            <version>2.15.13</version>
+        </dependency>
+
         <!--tools-->
         <dependency>
             <groupId>org.projectlombok</groupId>

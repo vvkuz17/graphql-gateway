@@ -32,17 +32,16 @@ import ru.yandex.cloud.graphql.gateway.configuration.model.FieldResolver;
 import ru.yandex.cloud.graphql.gateway.configuration.model.GraphQLApi;
 import ru.yandex.cloud.graphql.gateway.fetcher.factory.FunctionsDataFetcherFactory;
 import ru.yandex.cloud.graphql.gateway.registry.BatchLoaderRegistry;
-
-import static ru.yandex.cloud.graphql.gateway.util.FileUtils.readFile;
+import ru.yandex.cloud.graphql.gateway.util.FileLoader;
 
 @Configuration(proxyBeanMethods = false)
 public class GraphQLConfiguration {
 
-    @Value("${functions.api.url}")
-    private String functionsApiUrl;
+    private final FileLoader fileLoader;
 
-    @Value("${graphql.api.config.location}")
-    private String graphqlApiConfigLocation;
+    public GraphQLConfiguration(FileLoader fileLoader) {
+        this.fileLoader = fileLoader;
+    }
 
     @Bean
     public BatchLoaderRegistry batchLoaderRegistry() {
@@ -50,7 +49,10 @@ public class GraphQLConfiguration {
     }
 
     @Bean
-    public FunctionsDataFetcherFactory functionsDataFetcherFactory(BatchLoaderRegistry batchLoaderRegistry) {
+    public FunctionsDataFetcherFactory functionsDataFetcherFactory(
+            BatchLoaderRegistry batchLoaderRegistry,
+            @Value("${functions.api.url}") String functionsApiUrl
+    ) {
         return new FunctionsDataFetcherFactory(functionsApiUrl, batchLoaderRegistry);
     }
 
@@ -61,10 +63,11 @@ public class GraphQLConfiguration {
 
     @Bean
     @SneakyThrows
-    public GraphQLApi graphQLApi() {
+    public GraphQLApi graphQLApi(GraphqlApiYaml graphqlApiYaml) {
+        String apiYamlString = fileLoader.readFile(graphqlApiYaml);
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         mapper.findAndRegisterModules();
-        return mapper.readValue(readFile(graphqlApiConfigLocation), GraphQLApi.class);
+        return mapper.readValue(apiYamlString, GraphQLApi.class);
     }
 
     @Bean
@@ -73,7 +76,7 @@ public class GraphQLConfiguration {
             GraphQLExceptionHandler exceptionHandler,
             FunctionsDataFetcherFactory functionsDataFetcherFactory
     ) {
-        TypeDefinitionRegistry typeRegistry = new SchemaParser().parse(readFile(graphqlApi.getSchema()));
+        TypeDefinitionRegistry typeRegistry = new SchemaParser().parse(fileLoader.readFile(graphqlApi.getSchema()));
 
         RuntimeWiring.Builder runtimeWiring = RuntimeWiring.newRuntimeWiring();
 

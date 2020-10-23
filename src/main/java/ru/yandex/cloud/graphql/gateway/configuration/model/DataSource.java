@@ -4,10 +4,10 @@ import lombok.Data;
 
 @Data
 public class DataSource {
-    String name;
-    Type type;
-    String resource;
-    boolean batched;
+    private String name;
+    private Type type;
+    private String resource;
+    private boolean batched;
 
     public enum Type {
         YandexCloudFunction
