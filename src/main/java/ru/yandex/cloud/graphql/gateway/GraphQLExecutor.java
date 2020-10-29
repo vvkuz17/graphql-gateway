@@ -10,13 +10,11 @@ import lombok.RequiredArgsConstructor;
 import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderOptions;
 import org.dataloader.DataLoaderRegistry;
-import org.springframework.stereotype.Component;
 
 import ru.yandex.cloud.graphql.gateway.model.GraphQLContext;
 import ru.yandex.cloud.graphql.gateway.model.GraphQLRequest;
 import ru.yandex.cloud.graphql.gateway.registry.BatchLoaderRegistry;
 
-@Component
 @RequiredArgsConstructor
 public class GraphQLExecutor {
 

@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Configuration;
 
 import ru.yandex.cloud.graphql.gateway.configuration.model.FileLocation;
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @ConfigurationProperties(prefix = "graphql.api.yml")
 public class GraphqlApiYaml extends FileLocation {
 }

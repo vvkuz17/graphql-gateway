@@ -1,6 +1,8 @@
 package ru.yandex.cloud.graphql.gateway.configuration;
 
+import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -26,6 +28,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import ru.yandex.cloud.graphql.gateway.GraphQLExceptionHandler;
+import ru.yandex.cloud.graphql.gateway.GraphQLExecutor;
 import ru.yandex.cloud.graphql.gateway.coercing.ObjectCoercing;
 import ru.yandex.cloud.graphql.gateway.configuration.model.DataSource;
 import ru.yandex.cloud.graphql.gateway.configuration.model.FieldResolver;
@@ -37,10 +40,9 @@ import ru.yandex.cloud.graphql.gateway.util.FileLoader;
 @Configuration(proxyBeanMethods = false)
 public class GraphQLConfiguration {
 
-    private final FileLoader fileLoader;
-
-    public GraphQLConfiguration(FileLoader fileLoader) {
-        this.fileLoader = fileLoader;
+    @Bean
+    public GraphQLExecutor graphQLExecutor(BatchLoaderRegistry batchLoaderRegistry, GraphQL graphQL) {
+        return new GraphQLExecutor(graphQL, batchLoaderRegistry);
     }
 
     @Bean
@@ -63,7 +65,7 @@ public class GraphQLConfiguration {
 
     @Bean
     @SneakyThrows
-    public GraphQLApi graphQLApi(GraphqlApiYaml graphqlApiYaml) {
+    public GraphQLApi graphQLApi(GraphqlApiYaml graphqlApiYaml, FileLoader fileLoader) {
         String apiYamlString = fileLoader.readFile(graphqlApiYaml);
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         mapper.findAndRegisterModules();
@@ -74,7 +76,8 @@ public class GraphQLConfiguration {
     public GraphQL graphQL(
             GraphQLApi graphqlApi,
             GraphQLExceptionHandler exceptionHandler,
-            FunctionsDataFetcherFactory functionsDataFetcherFactory
+            FunctionsDataFetcherFactory functionsDataFetcherFactory,
+            FileLoader fileLoader
     ) {
         TypeDefinitionRegistry typeRegistry = new SchemaParser().parse(fileLoader.readFile(graphqlApi.getSchema()));
 
@@ -98,12 +101,16 @@ public class GraphQLConfiguration {
             FunctionsDataFetcherFactory functionsDataFetcherFactory,
             RuntimeWiring.Builder runtimeWiring
     ) {
-        graphqlApi.getFieldResolvers().stream()
+        Optional.ofNullable(graphqlApi.getFieldResolvers())
+                .orElse(Collections.emptyList())
+                .stream()
                 .collect(Collectors.groupingBy(FieldResolver::getType))
                 .forEach((type, resolvers) -> {
                             TypeRuntimeWiring.Builder typeWiring = TypeRuntimeWiring.newTypeWiring(type);
                             resolvers.forEach(fieldResolver -> {
-                                        DataSource dataSource = graphqlApi.getDatasources().stream()
+                                        DataSource dataSource = Optional.ofNullable(graphqlApi.getDatasources())
+                                                .orElse(Collections.emptyList())
+                                                .stream()
                                                 .collect(Collectors.toMap(DataSource::getName, Function.identity()))
                                                 .get(fieldResolver.getDatasource());
                                         typeWiring.dataFetcher(
@@ -117,7 +124,8 @@ public class GraphQLConfiguration {
     }
 
     private void initTypeResolvers(GraphQLApi graphqlApi, RuntimeWiring.Builder runtimeWiring) {
-        graphqlApi.getTypeResolvers()
+        Optional.ofNullable(graphqlApi.getTypeResolvers())
+                .orElse(Collections.emptyList())
                 .forEach(typeResolver -> runtimeWiring.type(
                         typeResolver.getType(),
                         builder -> builder.typeResolver(

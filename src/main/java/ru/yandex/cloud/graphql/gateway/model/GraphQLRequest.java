@@ -2,26 +2,13 @@ package ru.yandex.cloud.graphql.gateway.model;
 
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Builder;
-import lombok.Value;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
-@Value
-@Builder
-@JsonIgnoreProperties(ignoreUnknown = true)
+@Data
+@AllArgsConstructor
 public class GraphQLRequest {
-    String query;
-    String operationName;
-    Map<String, Object> variables;
-
-    public GraphQLRequest(
-            @JsonProperty("query") String query,
-            @JsonProperty("operationName") String operationName,
-            @JsonProperty("variables") Map<String, Object> variables
-    ) {
-        this.query = query;
-        this.operationName = operationName;
-        this.variables = variables;
-    }
+    private String query;
+    private String operationName;
+    private Map<String, Object> variables;
 }

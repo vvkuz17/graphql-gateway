@@ -1,6 +1,7 @@
 package ru.yandex.cloud.graphql.gateway;
 
 import java.util.Map;
+import java.util.Optional;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -19,8 +20,8 @@ import reactor.core.publisher.Mono;
 
 import ru.yandex.cloud.graphql.gateway.model.GraphQLRequest;
 
-@RestController
 @CrossOrigin
+@RestController
 @RequiredArgsConstructor
 public class GraphQLController {
 
@@ -34,18 +35,15 @@ public class GraphQLController {
     @ResponseBody
     public Mono<Map<String, Object>> executeJsonPost(
             @RequestBody GraphQLRequest requestBody,
-            GraphQLRequest requestParams,
-            ServerWebExchange request
+            GraphQLRequest request
     ) {
-        String query = requestParams.getQuery() == null ?
-                requestBody.getQuery() : requestParams.getQuery();
-        String operationName = requestParams.getOperationName() == null ?
-                requestBody.getOperationName() : requestParams.getOperationName();
-        Map<String, Object> variables = requestParams.getVariables() == null ?
-                requestBody.getVariables() : requestParams.getVariables();
+        request = new GraphQLRequest(
+                Optional.ofNullable(request.getQuery()).orElse(requestBody.getQuery()),
+                Optional.ofNullable(request.getOperationName()).orElse(requestBody.getOperationName()),
+                Optional.ofNullable(request.getVariables()).orElse(requestBody.getVariables())
+        );
 
-        GraphQLRequest graphQLRequest = new GraphQLRequest(query, operationName, variables);
-        return Mono.fromFuture(executor.execute(graphQLRequest));
+        return Mono.fromFuture(executor.execute(request));
     }
 
     @PostMapping(
@@ -56,12 +54,14 @@ public class GraphQLController {
     @ResponseBody
     public Mono<Map<String, Object>> executeGraphQLPost(
             @RequestBody String queryBody,
-            GraphQLRequest graphQLRequest,
-            ServerWebExchange request
+            GraphQLRequest request
     ) {
-        String query = graphQLRequest.getQuery() == null ? queryBody : graphQLRequest.getQuery();
-        graphQLRequest = new GraphQLRequest(query, graphQLRequest.getOperationName(), graphQLRequest.getVariables());
-        return Mono.fromFuture(executor.execute(graphQLRequest));
+        request = new GraphQLRequest(
+                request.getQuery() == null ? queryBody : request.getQuery(),
+                request.getOperationName(),
+                request.getVariables()
+        );
+        return Mono.fromFuture(executor.execute(request));
     }
 
     @RequestMapping(
@@ -73,18 +73,18 @@ public class GraphQLController {
     @ResponseBody
     public Mono<Map<String, Object>> executeFormPost(
             @RequestParam Map<String, String> queryParams,
-            GraphQLRequest graphQLRequest,
-            ServerWebExchange request
+            GraphQLRequest request
     ) {
-        String queryParam = queryParams.get("query");
-        String operationNameParam = queryParams.get("operationName");
+        String query = queryParams.get("query");
+        String operationName = queryParams.get("operationName");
 
-        String query = StringUtils.isEmpty(queryParam) ? graphQLRequest.getQuery() : queryParam;
-        String operationName = StringUtils.isEmpty(operationNameParam) ? graphQLRequest.getOperationName() :
-                operationNameParam;
+        request = new GraphQLRequest(
+                StringUtils.isEmpty(query) ? request.getQuery() : query,
+                StringUtils.isEmpty(operationName) ? request.getOperationName() : operationName,
+                request.getVariables()
+        );
 
-        graphQLRequest = new GraphQLRequest(query, operationName, graphQLRequest.getVariables());
-        return Mono.fromFuture(executor.execute(graphQLRequest));
+        return Mono.fromFuture(executor.execute(request));
     }
 
     @GetMapping(

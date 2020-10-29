@@ -1,11 +1,12 @@
 package ru.yandex.cloud.graphql.gateway.transformer.error;
 
+import java.util.Arrays;
 import java.util.List;
 
 import ru.yandex.cloud.graphql.gateway.model.GraphQLApiError;
 
 public class GraphQLApiErrorTransformer {
-    private static final List<ErrorTransformer> errorTransformersChain = List.of(
+    private static final List<ErrorTransformer> errorTransformersChain = Arrays.asList(
             new FunctionExceptionTransformer()
     );
 

@@ -21,14 +21,14 @@ import ru.yandex.cloud.graphql.gateway.client.functions.model.FunctionRequest;
 
 public class FunctionsClient<V> {
 
-    private final ParameterizedTypeReference<V> VALUE_TYPE_REFERENCE = new ParameterizedTypeReference<>() {
+    private final ParameterizedTypeReference<V> VALUE_TYPE_REFERENCE = new ParameterizedTypeReference<V>() {
     };
     private final ParameterizedTypeReference<List<FunctionResponse<V>>> BATCH_TYPE_REFERENCE =
-            new ParameterizedTypeReference<>() {
+            new ParameterizedTypeReference<List<FunctionResponse<V>>>() {
             };
 
     private final ParameterizedTypeReference<FunctionResponse<V>> ERROR_RESPONSE_TYPE_REFERENCE =
-            new ParameterizedTypeReference<>() {
+            new ParameterizedTypeReference<FunctionResponse<V>>() {
             };
 
     private final WebClient webclient;

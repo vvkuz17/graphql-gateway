@@ -7,13 +7,11 @@ import java.nio.file.Paths;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 
 import ru.yandex.cloud.graphql.gateway.configuration.model.FileLocation;
 
-@Component
 @RequiredArgsConstructor
 public class FileLoader {
 

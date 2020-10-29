@@ -1,9 +1,11 @@
 package ru.yandex.cloud.graphql.gateway.client.functions.model;
 
-import lombok.Value;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
-@Value
+@Data
+@AllArgsConstructor
 public class Argument {
-    String name;
-    Object value;
+    private String name;
+    private Object value;
 }

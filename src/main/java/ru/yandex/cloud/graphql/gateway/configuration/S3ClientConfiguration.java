@@ -10,7 +10,9 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 
-@Configuration
+import ru.yandex.cloud.graphql.gateway.util.FileLoader;
+
+@Configuration(proxyBeanMethods = false)
 public class S3ClientConfiguration {
 
     @Bean
@@ -25,5 +27,10 @@ public class S3ClientConfiguration {
                 .region(Region.of(region))
                 .credentialsProvider(StaticCredentialsProvider.create(credentials))
                 .build();
+    }
+
+    @Bean
+    public FileLoader fileLoader(S3Client s3Client) {
+        return new FileLoader(s3Client);
     }
 }

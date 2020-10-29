@@ -3,12 +3,12 @@ package ru.yandex.cloud.graphql.gateway.client.functions.model;
 import java.util.List;
 
 import lombok.Builder;
-import lombok.Value;
+import lombok.Data;
 
-@Value
+@Data
 @Builder
 public class Field {
-    String name;
-    String alias;
-    List<Argument> arguments;
+    private String name;
+    private String alias;
+    private List<Argument> arguments;
 }
