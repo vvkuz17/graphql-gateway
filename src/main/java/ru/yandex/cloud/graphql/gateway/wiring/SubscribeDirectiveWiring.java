@@ -11,8 +11,8 @@ import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
 import lombok.RequiredArgsConstructor;
 
 import ru.yandex.cloud.graphql.gateway.fetcher.SubscriptionDataFetcher;
-import ru.yandex.cloud.graphql.gateway.subscriptions.Channel;
-import ru.yandex.cloud.graphql.gateway.subscriptions.ChannelRegistry;
+import ru.yandex.cloud.graphql.gateway.channels.Channel;
+import ru.yandex.cloud.graphql.gateway.channels.ChannelRegistry;
 
 import static graphql.schema.FieldCoordinates.coordinates;
 

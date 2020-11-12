@@ -6,7 +6,7 @@ import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import lombok.RequiredArgsConstructor;
 
-import ru.yandex.cloud.graphql.gateway.subscriptions.Channel;
+import ru.yandex.cloud.graphql.gateway.channels.Channel;
 
 @RequiredArgsConstructor
 public class SubscribedDataFetcher<T> implements DataFetcher<CompletableFuture<T>> {

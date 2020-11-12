@@ -37,9 +37,9 @@ import ru.yandex.cloud.graphql.gateway.configuration.model.GraphQLApi;
 import ru.yandex.cloud.graphql.gateway.fetcher.SubscribedDataFetcher;
 import ru.yandex.cloud.graphql.gateway.fetcher.factory.FunctionsDataFetcherFactory;
 import ru.yandex.cloud.graphql.gateway.loader.BatchLoaderRegistry;
-import ru.yandex.cloud.graphql.gateway.subscriptions.Channel;
-import ru.yandex.cloud.graphql.gateway.subscriptions.ChannelRegistry;
-import ru.yandex.cloud.graphql.gateway.subscriptions.LocalChannel;
+import ru.yandex.cloud.graphql.gateway.channels.Channel;
+import ru.yandex.cloud.graphql.gateway.channels.ChannelRegistry;
+import ru.yandex.cloud.graphql.gateway.channels.LocalChannel;
 import ru.yandex.cloud.graphql.gateway.util.FileLoader;
 import ru.yandex.cloud.graphql.gateway.wiring.SubscribeDirectiveWiring;
 

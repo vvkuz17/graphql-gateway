@@ -2,7 +2,6 @@ package ru.yandex.cloud.graphql.gateway.configuration;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.ReactiveRedisOperations;
@@ -13,7 +12,7 @@ import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
-import ru.yandex.cloud.graphql.gateway.subscriptions.Message;
+import ru.yandex.cloud.graphql.gateway.channels.Message;
 
 /*@Configuration*/
 public class RedisConfiguration {

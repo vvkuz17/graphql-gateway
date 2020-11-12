@@ -1,4 +1,4 @@
-package ru.yandex.cloud.graphql.gateway.subscriptions;
+package ru.yandex.cloud.graphql.gateway.channels;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;

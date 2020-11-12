@@ -7,7 +7,7 @@ import graphql.schema.DataFetchingEnvironment;
 import lombok.RequiredArgsConstructor;
 import org.reactivestreams.Publisher;
 
-import ru.yandex.cloud.graphql.gateway.subscriptions.Channel;
+import ru.yandex.cloud.graphql.gateway.channels.Channel;
 
 @RequiredArgsConstructor
 public class SubscriptionDataFetcher implements DataFetcher<Publisher<Map<String, Object>>> {
