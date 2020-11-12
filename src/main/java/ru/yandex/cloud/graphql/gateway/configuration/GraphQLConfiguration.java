@@ -12,6 +12,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import graphql.GraphQL;
 import graphql.execution.AsyncExecutionStrategy;
 import graphql.execution.AsyncSerialExecutionStrategy;
+import graphql.execution.SubscriptionExecutionStrategy;
 import graphql.execution.instrumentation.tracing.TracingInstrumentation;
 import graphql.schema.DataFetcher;
 import graphql.schema.GraphQLScalarType;
@@ -33,9 +34,14 @@ import ru.yandex.cloud.graphql.gateway.coercing.ObjectCoercing;
 import ru.yandex.cloud.graphql.gateway.configuration.model.DataSource;
 import ru.yandex.cloud.graphql.gateway.configuration.model.FieldResolver;
 import ru.yandex.cloud.graphql.gateway.configuration.model.GraphQLApi;
+import ru.yandex.cloud.graphql.gateway.fetcher.SubscribedDataFetcher;
 import ru.yandex.cloud.graphql.gateway.fetcher.factory.FunctionsDataFetcherFactory;
-import ru.yandex.cloud.graphql.gateway.registry.BatchLoaderRegistry;
+import ru.yandex.cloud.graphql.gateway.loader.BatchLoaderRegistry;
+import ru.yandex.cloud.graphql.gateway.subscriptions.Channel;
+import ru.yandex.cloud.graphql.gateway.subscriptions.ChannelRegistry;
+import ru.yandex.cloud.graphql.gateway.subscriptions.LocalChannel;
 import ru.yandex.cloud.graphql.gateway.util.FileLoader;
+import ru.yandex.cloud.graphql.gateway.wiring.SubscribeDirectiveWiring;
 
 @Configuration(proxyBeanMethods = false)
 public class GraphQLConfiguration {
@@ -51,16 +57,16 @@ public class GraphQLConfiguration {
     }
 
     @Bean
+    public ChannelRegistry channelRegistry() {
+        return new ChannelRegistry();
+    }
+
+    @Bean
     public FunctionsDataFetcherFactory functionsDataFetcherFactory(
             BatchLoaderRegistry batchLoaderRegistry,
             @Value("${functions.api.url}") String functionsApiUrl
     ) {
         return new FunctionsDataFetcherFactory(functionsApiUrl, batchLoaderRegistry);
-    }
-
-    @Bean
-    public GraphQLExceptionHandler graphQLExceptionHandler() {
-        return new GraphQLExceptionHandler();
     }
 
     @Bean
@@ -75,23 +81,28 @@ public class GraphQLConfiguration {
     @Bean
     public GraphQL graphQL(
             GraphQLApi graphqlApi,
-            GraphQLExceptionHandler exceptionHandler,
             FunctionsDataFetcherFactory functionsDataFetcherFactory,
-            FileLoader fileLoader
+            FileLoader fileLoader,
+            ChannelRegistry channelRegistry
     ) {
         TypeDefinitionRegistry typeRegistry = new SchemaParser().parse(fileLoader.readFile(graphqlApi.getSchema()));
 
         RuntimeWiring.Builder runtimeWiring = RuntimeWiring.newRuntimeWiring();
 
-        initDataFetchers(graphqlApi, functionsDataFetcherFactory, runtimeWiring);
+        runtimeWiring.directive(SubscribeDirectiveWiring.SUBSCRIBE, new SubscribeDirectiveWiring(channelRegistry));
+
+        initDataFetchers(graphqlApi, functionsDataFetcherFactory, runtimeWiring, channelRegistry);
         initScalars(typeRegistry, runtimeWiring);
         initTypeResolvers(graphqlApi, runtimeWiring);
 
         GraphQLSchema graphQLSchema = new SchemaGenerator().makeExecutableSchema(typeRegistry, runtimeWiring.build());
 
+        GraphQLExceptionHandler exceptionHandler = new GraphQLExceptionHandler();
+
         return GraphQL.newGraphQL(graphQLSchema)
                 .queryExecutionStrategy(new AsyncExecutionStrategy(exceptionHandler))
                 .mutationExecutionStrategy(new AsyncSerialExecutionStrategy(exceptionHandler))
+                .subscriptionExecutionStrategy(new SubscriptionExecutionStrategy(exceptionHandler))
                 .instrumentation(new TracingInstrumentation())
                 .build();
     }
@@ -99,7 +110,8 @@ public class GraphQLConfiguration {
     private void initDataFetchers(
             GraphQLApi graphqlApi,
             FunctionsDataFetcherFactory functionsDataFetcherFactory,
-            RuntimeWiring.Builder runtimeWiring
+            RuntimeWiring.Builder runtimeWiring,
+            ChannelRegistry channelRegistry
     ) {
         Optional.ofNullable(graphqlApi.getFieldResolvers())
                 .orElse(Collections.emptyList())
@@ -113,9 +125,17 @@ public class GraphQLConfiguration {
                                                 .stream()
                                                 .collect(Collectors.toMap(DataSource::getName, Function.identity()))
                                                 .get(fieldResolver.getDatasource());
-                                        typeWiring.dataFetcher(
-                                                fieldResolver.getField(),
-                                                createDataFetcher(dataSource, functionsDataFetcherFactory));
+
+                                        DataFetcher<CompletableFuture<Map<String, Object>>> dataFetcher =
+                                                createDataFetcher(dataSource, functionsDataFetcherFactory);
+
+                                        if (fieldResolver.isSubscribed()) {
+                                            Channel<Map<String, Object>> channel = new LocalChannel<>();
+                                            channelRegistry.register(fieldResolver.getField(), channel);
+                                            dataFetcher = new SubscribedDataFetcher<>(dataFetcher, channel);
+                                        }
+
+                                        typeWiring.dataFetcher(fieldResolver.getField(), dataFetcher);
                                     }
                             );
                             runtimeWiring.type(typeWiring.build());

@@ -25,18 +25,23 @@ fieldResolvers:
   - type: Query
     field: getPost
     datasource: get-post-function
+    operation: invoke
 
   - type: Query
     field: findPosts
     datasource: find-posts-function
+    operation: invoke
 
   - type: Post
     field: linkedPosts
     datasource: get-linked-posts-function
+    operation: invoke
 
   - type: Mutation
     field: createPost
     datasource: create-post-function
+    operation: invoke
+    subscribed: true
 
 typeResolvers:
   - type: Relation

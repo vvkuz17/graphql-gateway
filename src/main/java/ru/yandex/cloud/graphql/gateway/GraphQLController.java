@@ -3,6 +3,7 @@ package ru.yandex.cloud.graphql.gateway;
 import java.util.Map;
 import java.util.Optional;
 
+import graphql.ExecutionResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.util.StringUtils;
@@ -10,10 +11,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
@@ -32,7 +30,6 @@ public class GraphQLController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    @ResponseBody
     public Mono<Map<String, Object>> executeJsonPost(
             @RequestBody GraphQLRequest requestBody,
             GraphQLRequest request
@@ -40,10 +37,12 @@ public class GraphQLController {
         request = new GraphQLRequest(
                 Optional.ofNullable(request.getQuery()).orElse(requestBody.getQuery()),
                 Optional.ofNullable(request.getOperationName()).orElse(requestBody.getOperationName()),
-                Optional.ofNullable(request.getVariables()).orElse(requestBody.getVariables())
+                Optional.ofNullable(request.getVariables()).orElse(requestBody.getVariables()),
+                Optional.ofNullable(request.getExtensions()).orElse(requestBody.getVariables())
         );
 
-        return Mono.fromFuture(executor.execute(request));
+        return Mono.fromFuture(executor.executeAsync(request))
+                .map(ExecutionResult::toSpecification);
     }
 
     @PostMapping(
@@ -51,7 +50,6 @@ public class GraphQLController {
             consumes = {"application/graphql", "application/graphql;charset=UTF-8"},
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    @ResponseBody
     public Mono<Map<String, Object>> executeGraphQLPost(
             @RequestBody String queryBody,
             GraphQLRequest request
@@ -59,18 +57,18 @@ public class GraphQLController {
         request = new GraphQLRequest(
                 request.getQuery() == null ? queryBody : request.getQuery(),
                 request.getOperationName(),
-                request.getVariables()
+                request.getVariables(),
+                request.getExtensions()
         );
-        return Mono.fromFuture(executor.execute(request));
+        return Mono.fromFuture(executor.executeAsync(request))
+                .map(ExecutionResult::toSpecification);
     }
 
-    @RequestMapping(
-            method = RequestMethod.POST,
+    @PostMapping(
             value = "${graphql.http.endpoint:/graphql}",
             consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE, "application/x-www-form-urlencoded;charset=UTF-8"},
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    @ResponseBody
     public Mono<Map<String, Object>> executeFormPost(
             @RequestParam Map<String, String> queryParams,
             GraphQLRequest request
@@ -81,10 +79,12 @@ public class GraphQLController {
         request = new GraphQLRequest(
                 StringUtils.isEmpty(query) ? request.getQuery() : query,
                 StringUtils.isEmpty(operationName) ? request.getOperationName() : operationName,
-                request.getVariables()
+                request.getVariables(),
+                request.getExtensions()
         );
 
-        return Mono.fromFuture(executor.execute(request));
+        return Mono.fromFuture(executor.executeAsync(request))
+                .map(ExecutionResult::toSpecification);
     }
 
     @GetMapping(
@@ -92,8 +92,8 @@ public class GraphQLController {
             produces = MediaType.APPLICATION_JSON_VALUE,
             headers = "Connection!=Upgrade"
     )
-    @ResponseBody
     public Mono<Map<String, Object>> executeGet(GraphQLRequest graphQLRequest, ServerWebExchange request) {
-        return Mono.fromFuture(executor.execute(graphQLRequest));
+        return Mono.fromFuture(executor.executeAsync(graphQLRequest))
+                .map(ExecutionResult::toSpecification);
     }
 }

@@ -268,7 +268,8 @@ class FunctionsTest {
                         .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
         );
 
-        GraphQLRequest request = new GraphQLRequest(GET_POST_QUERY, null, new HashMap<>());
+        GraphQLRequest request = new GraphQLRequest(GET_POST_QUERY, null, Collections.emptyMap(),
+                Collections.emptyMap());
 
         webTestClient.post()
                 .uri("/graphql")
@@ -319,7 +320,8 @@ class FunctionsTest {
                 .setBody(objectMapper.writeValueAsString(functionError))
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE));
 
-        GraphQLRequest request = new GraphQLRequest(GET_POST_QUERY, null, new HashMap<>());
+        GraphQLRequest request = new GraphQLRequest(GET_POST_QUERY, null, Collections.emptyMap(),
+                Collections.emptyMap());
 
         webTestClient.post()
                 .uri("/graphql")
@@ -382,7 +384,8 @@ class FunctionsTest {
                         .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
         );
 
-        GraphQLRequest request = new GraphQLRequest(CREATE_POST_QUERY, null, new HashMap<>());
+        GraphQLRequest request = new GraphQLRequest(CREATE_POST_QUERY, null, Collections.emptyMap(),
+                Collections.emptyMap());
 
         webTestClient.post()
                 .uri("/graphql")
@@ -454,7 +457,8 @@ class FunctionsTest {
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
         );
 
-        GraphQLRequest request = new GraphQLRequest(FIND_POSTS_QUERY, null, new HashMap<>());
+        GraphQLRequest request = new GraphQLRequest(FIND_POSTS_QUERY, null, Collections.emptyMap(),
+                Collections.emptyMap());
 
         webTestClient.post()
                 .uri("/graphql")
@@ -515,7 +519,8 @@ class FunctionsTest {
 
     @Test
     void testIntrospectionQuery() {
-        GraphQLRequest request = new GraphQLRequest(INTROSPECTION_QUERY, "IntrospectionQuery", new HashMap<>());
+        GraphQLRequest request = new GraphQLRequest(INTROSPECTION_QUERY, "IntrospectionQuery", Collections.emptyMap()
+                , Collections.emptyMap());
 
         webTestClient.post()
                 .uri("/graphql")

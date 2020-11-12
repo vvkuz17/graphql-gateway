@@ -1,4 +1,4 @@
-package ru.yandex.cloud.graphql.gateway.registry;
+package ru.yandex.cloud.graphql.gateway.loader;
 
 import java.util.Collections;
 import java.util.HashMap;

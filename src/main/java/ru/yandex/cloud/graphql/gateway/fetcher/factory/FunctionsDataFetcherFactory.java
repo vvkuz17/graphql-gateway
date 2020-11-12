@@ -9,8 +9,8 @@ import graphql.schema.DataFetcher;
 import ru.yandex.cloud.graphql.gateway.client.functions.FunctionsClient;
 import ru.yandex.cloud.graphql.gateway.configuration.model.DataSource;
 import ru.yandex.cloud.graphql.gateway.fetcher.FunctionsDataFetcher;
+import ru.yandex.cloud.graphql.gateway.loader.BatchLoaderRegistry;
 import ru.yandex.cloud.graphql.gateway.loader.FunctionsBatchLoader;
-import ru.yandex.cloud.graphql.gateway.registry.BatchLoaderRegistry;
 
 public class FunctionsDataFetcherFactory implements DataFetcherFactory {
     private final String functionsApiUrl;

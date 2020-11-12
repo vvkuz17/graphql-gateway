@@ -8,4 +8,5 @@ public class FieldResolver {
     private String field;
     private String datasource;
     private String operation;
+    private boolean subscribed;
 }
