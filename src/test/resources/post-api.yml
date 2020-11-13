@@ -3,6 +3,9 @@ name: post-api
 schema:
   path: post.graphql
 
+subscriptions:
+  mode: local
+
 datasources:
   - name: get-post-function
     type: YandexCloudFunction

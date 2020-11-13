@@ -27,19 +27,22 @@ import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.core.ReactiveRedisOperations;
 
 import ru.yandex.cloud.graphql.gateway.GraphQLExceptionHandler;
 import ru.yandex.cloud.graphql.gateway.GraphQLExecutor;
+import ru.yandex.cloud.graphql.gateway.channels.Channel;
+import ru.yandex.cloud.graphql.gateway.channels.ChannelRegistry;
+import ru.yandex.cloud.graphql.gateway.channels.LocalChannel;
+import ru.yandex.cloud.graphql.gateway.channels.RedisChannel;
 import ru.yandex.cloud.graphql.gateway.coercing.ObjectCoercing;
 import ru.yandex.cloud.graphql.gateway.configuration.model.DataSource;
 import ru.yandex.cloud.graphql.gateway.configuration.model.FieldResolver;
 import ru.yandex.cloud.graphql.gateway.configuration.model.GraphQLApi;
+import ru.yandex.cloud.graphql.gateway.configuration.model.Subscriptions;
 import ru.yandex.cloud.graphql.gateway.fetcher.SubscribedDataFetcher;
 import ru.yandex.cloud.graphql.gateway.fetcher.factory.FunctionsDataFetcherFactory;
 import ru.yandex.cloud.graphql.gateway.loader.BatchLoaderRegistry;
-import ru.yandex.cloud.graphql.gateway.channels.Channel;
-import ru.yandex.cloud.graphql.gateway.channels.ChannelRegistry;
-import ru.yandex.cloud.graphql.gateway.channels.LocalChannel;
 import ru.yandex.cloud.graphql.gateway.util.FileLoader;
 import ru.yandex.cloud.graphql.gateway.wiring.SubscribeDirectiveWiring;
 
@@ -83,7 +86,8 @@ public class GraphQLConfiguration {
             GraphQLApi graphqlApi,
             FunctionsDataFetcherFactory functionsDataFetcherFactory,
             FileLoader fileLoader,
-            ChannelRegistry channelRegistry
+            ChannelRegistry channelRegistry,
+            ReactiveRedisOperations<Object, Object> redisOperations
     ) {
         TypeDefinitionRegistry typeRegistry = new SchemaParser().parse(fileLoader.readFile(graphqlApi.getSchema()));
 
@@ -91,7 +95,7 @@ public class GraphQLConfiguration {
 
         runtimeWiring.directive(SubscribeDirectiveWiring.SUBSCRIBE, new SubscribeDirectiveWiring(channelRegistry));
 
-        initDataFetchers(graphqlApi, functionsDataFetcherFactory, runtimeWiring, channelRegistry);
+        initDataFetchers(graphqlApi, functionsDataFetcherFactory, runtimeWiring, channelRegistry, redisOperations);
         initScalars(typeRegistry, runtimeWiring);
         initTypeResolvers(graphqlApi, runtimeWiring);
 
@@ -111,7 +115,8 @@ public class GraphQLConfiguration {
             GraphQLApi graphqlApi,
             FunctionsDataFetcherFactory functionsDataFetcherFactory,
             RuntimeWiring.Builder runtimeWiring,
-            ChannelRegistry channelRegistry
+            ChannelRegistry channelRegistry,
+            ReactiveRedisOperations<Object, Object> redisOperations
     ) {
         Optional.ofNullable(graphqlApi.getFieldResolvers())
                 .orElse(Collections.emptyList())
@@ -130,7 +135,9 @@ public class GraphQLConfiguration {
                                                 createDataFetcher(dataSource, functionsDataFetcherFactory);
 
                                         if (fieldResolver.isSubscribed()) {
-                                            Channel<Map<String, Object>> channel = new LocalChannel<>();
+                                            Channel<Map<String, Object>> channel =
+                                                    createChannel(fieldResolver.getField(),
+                                                            graphqlApi.getSubscriptions().getMode(), redisOperations);
                                             channelRegistry.register(fieldResolver.getField(), channel);
                                             dataFetcher = new SubscribedDataFetcher<>(dataFetcher, channel);
                                         }
@@ -175,5 +182,19 @@ public class GraphQLConfiguration {
         }
 
         throw new IllegalArgumentException("Unknown datasource: " + dataSource.getType());
+    }
+
+    private Channel<Map<String, Object>> createChannel(
+            String field,
+            Subscriptions.Mode mode,
+            ReactiveRedisOperations<Object, Object> redisOperations
+    ) {
+        switch (mode) {
+            case local:
+                return new LocalChannel<>();
+            case redis:
+                return new RedisChannel<>(redisOperations, field);
+        }
+        throw new RuntimeException("Unable create subscription channel for mode : " + mode);
     }
 }

@@ -13,9 +13,9 @@ public class LocalChannel<T> implements Channel<T> {
     }
 
     @Override
-    public Mono<Void> push(T message) {
+    public Mono<T> push(T message) {
         buffer.tryEmitNext(message);
-        return Mono.empty();
+        return Mono.just(message);
     }
 
     @Override

@@ -26,6 +26,6 @@ public class GraphQLApiError implements GraphQLError {
     }
 
     public enum Type implements ErrorClassification {
-        InternalGatewayError, FunctionError
+        InternalServerError, FunctionError, RedisConnectionError
     }
 }

@@ -11,14 +11,18 @@ import ru.yandex.cloud.graphql.gateway.client.functions.model.StackTraceItem;
 import ru.yandex.cloud.graphql.gateway.client.functions.exception.FunctionException;
 import ru.yandex.cloud.graphql.gateway.model.GraphQLApiError;
 
-public class FunctionExceptionTransformer implements ErrorTransformer<FunctionException> {
+public class FunctionExceptionTransformer implements ErrorTransformer {
     @Override
-    public GraphQLApiError.GraphQLApiErrorBuilder transform(FunctionException e) {
-        return GraphQLApiError.builder()
-                .message(e.getMessage())
-                .errorType(GraphQLApiError.Type.FunctionError)
-                .locations(transform(e.getFunctionStackTrace()))
-                .extensions(Collections.singletonMap("errorType", e.getType()));
+    public GraphQLApiError.GraphQLApiErrorBuilder transform(Throwable e) {
+        if (e instanceof FunctionException) {
+            FunctionException fe = (FunctionException) e;
+            return GraphQLApiError.builder()
+                    .message(e.getMessage())
+                    .errorType(GraphQLApiError.Type.FunctionError)
+                    .locations(transform(fe.getFunctionStackTrace()))
+                    .extensions(Collections.singletonMap("errorType", fe.getType()));
+        }
+        return null;
     }
 
     private List<SourceLocation> transform(List<StackTraceItem> stackTrace) {

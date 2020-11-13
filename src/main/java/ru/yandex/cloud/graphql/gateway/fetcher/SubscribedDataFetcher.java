@@ -16,9 +16,6 @@ public class SubscribedDataFetcher<T> implements DataFetcher<CompletableFuture<T
 
     @Override
     public CompletableFuture<T> get(DataFetchingEnvironment environment) throws Exception {
-        return fetcher.get(environment).thenApply(t -> {
-            channel.push(t);
-            return t;
-        });
+        return fetcher.get(environment).thenCompose(t -> channel.push(t).toFuture());
     }
 }

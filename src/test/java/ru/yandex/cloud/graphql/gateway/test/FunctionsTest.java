@@ -19,6 +19,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
+import org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
@@ -34,6 +36,7 @@ import ru.yandex.cloud.graphql.gateway.client.functions.model.FunctionRequest;
 import ru.yandex.cloud.graphql.gateway.configuration.GraphQLConfiguration;
 import ru.yandex.cloud.graphql.gateway.configuration.GraphqlApiYaml;
 import ru.yandex.cloud.graphql.gateway.configuration.S3ClientConfiguration;
+import ru.yandex.cloud.graphql.gateway.configuration.WebSocketConfiguration;
 import ru.yandex.cloud.graphql.gateway.model.GraphQLRequest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -46,7 +49,10 @@ import static org.junit.jupiter.api.Assertions.assertNull;
         GraphQLConfiguration.class,
         S3ClientConfiguration.class,
         GraphqlApiYaml.class,
-        GraphQLController.class
+        GraphQLController.class,
+        WebSocketConfiguration.class,
+        RedisAutoConfiguration.class,
+        RedisReactiveAutoConfiguration.class
 })
 @WebFluxTest(GraphQLController.class)
 class FunctionsTest {

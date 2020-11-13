@@ -1,13 +1,14 @@
 package ru.yandex.cloud.graphql.gateway.transformer.error;
 
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 
 import ru.yandex.cloud.graphql.gateway.model.GraphQLApiError;
 
 public class GraphQLApiErrorTransformer {
-    private static final List<ErrorTransformer> errorTransformersChain = Collections.singletonList(
-            new FunctionExceptionTransformer()
+    private static final List<ErrorTransformer> errorTransformersChain = Arrays.asList(
+            new FunctionExceptionTransformer(),
+            new RedisConnectionFailureExceptionTransformer()
     );
 
     public static GraphQLApiError transform(Throwable ex, List<Object> path) {
@@ -26,8 +27,8 @@ public class GraphQLApiErrorTransformer {
     private static GraphQLApiError createInternalServerError(List<Object> path) {
         return GraphQLApiError
                 .builder()
-                .errorType(GraphQLApiError.Type.InternalGatewayError)
-                .message("Internal gateway error")
+                .errorType(GraphQLApiError.Type.InternalServerError)
+                .message("Internal server error")
                 .path(path)
                 .build();
     }
